@@ -93,11 +93,30 @@ moodle_sitename_short=${moodle_sitename_short:-$DEFAULT_MOODLE_SITENAME_SHORT}
 read -p "Moodle Yönetici Kullanıcı Adı [$DEFAULT_MOODLE_USERNAME]: " moodle_username
 moodle_username=${moodle_username:-$DEFAULT_MOODLE_USERNAME}
 
+# Moodle Yönetici Şifresi için Moodle uyumlu rastgele şifre üretelim
+SPEC_CHARS='!@#%*+=-?'
+SPECIALS=""
+for i in {1..3}; do
+  SPECIALS="${SPECIALS}${SPEC_CHARS:$((RANDOM % ${#SPEC_CHARS})):1}"
+done
+UPPERS=$(openssl rand -base64 15 | tr -dc 'A-Z' | head -c 3)
+LOWERS=$(openssl rand -base64 15 | tr -dc 'a-z' | head -c 3)
+DIGITS=$(openssl rand -base64 15 | tr -dc '0-9' | head -c 3)
+RAW_PASS="${UPPERS}${LOWERS}${DIGITS}${SPECIALS}"
+
+if command -v shuf >/dev/null 2>&1; then
+  RANDOM_ADMIN_PASS=$(echo "$RAW_PASS" | fold -w1 | shuf | tr -d '\n')
+else
+  RANDOM_ADMIN_PASS="${UPPERS:0:1}${LOWERS:0:1}${DIGITS:0:1}${SPECIALS:0:1}${UPPERS:1:2}${LOWERS:1:2}${DIGITS:1:2}${SPECIALS:1:2}"
+fi
+
 # Moodle Yönetici Şifresi (Validasyonlu)
 while true; do
   echo -e "\n${BLUE}NOT: Moodle şifresi en az 8 karakter olmalı; en az 1 büyük, 1 küçük harf, 1 rakam ve 1 özel karakter içermelidir.${NC}"
-  read -sp "Moodle Yönetici Şifresi girin: " moodle_password
-  echo ""
+  read -p "Moodle Yönetici Şifresi [$RANDOM_ADMIN_PASS]: " input_password
+  
+  # Eğer boş geçildiyse varsayılan rastgele şifreyi ata
+  moodle_password=${input_password:-$RANDOM_ADMIN_PASS}
   
   # Moodle şifre doğrulama kuralları
   if [ ${#moodle_password} -lt 8 ]; then
