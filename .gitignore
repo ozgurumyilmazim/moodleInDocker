@@ -1,0 +1,6 @@
+# Environment details
+.env
+
+# OS discards
+.DS_Store
+Thumbs.db

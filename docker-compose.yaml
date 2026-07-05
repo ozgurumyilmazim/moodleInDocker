@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+    networks:
+      - moodle_net
+
+  moodle:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '${PORT}:80'
+    environment:
+      - MOODLE_DATABASE_HOST=db
+      - MOODLE_DATABASE_USER=${POSTGRES_USER}
+      - MOODLE_DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - MOODLE_DATABASE_NAME=${POSTGRES_DB}
+      - MOODLE_URL=${MOODLE_URL}
+      - MOODLE_USERNAME=${MOODLE_USERNAME}
+      - MOODLE_PASSWORD=${MOODLE_PASSWORD}
+      - MOODLE_EMAIL=${MOODLE_EMAIL}
+      - MOODLE_SITENAME=${MOODLE_SITENAME}
+      - MOODLE_SITENAME_SHORT=${MOODLE_SITENAME_SHORT}
+    volumes:
+      - moodle_data:/var/www/html
+      - moodledata_data:/var/www/moodledata
+    depends_on:
+      - db
+    restart: always
+    networks:
+      - moodle_net
+
+volumes:
+  postgres_data:
+    driver: local
+  moodle_data:
+    driver: local
+  moodledata_data:
+    driver: local
+
+networks:
+  moodle_net:
+    driver: bridge
