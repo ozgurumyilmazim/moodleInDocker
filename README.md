@@ -1,7 +1,3 @@
-# moodleInDocker
-
-A LMS (moodle) in a docker environment
-
 Docker ile Resmi Moodle (PostgreSQL) Kurulum Şablonu
 
 Bu proje, Resmi PHP ve Resmi PostgreSQL Docker imajları kullanılarak hazırlanmış, tamamen özelleştirilebilir ve üretime hazır bir Moodle LMS şablonudur. Veritabanı motoru olarak yüksek performanslı ve modern PostgreSQL 16 kullanılmıştır.
@@ -20,37 +16,51 @@ Moodle için optimize edilmiş PHP opcache ve bellek limit ayarları.
 
 Tamamen Türkçe dil desteği ile otomatik CLI kurulumu.
 
-🚀 Hızlı Başlangıç
+setup.sh interaktif kurulum asistanı.
+
+🚀 Hızlı Başlangıç (Önerilen)
+
+Projeyi bilgisayarınıza klonladıktan sonra tek yapmanız gereken interaktif kurulum betiğini çalıştırmaktır. Betik sistem gereksinimlerini kontrol edecek, şifrelerinizi güvenli kurallara göre almanızı sağlayacak ve Docker sistemini ayağa kaldıracaktır.
 
 Adım 1: Projeyi Klonlayın
 
 git clone <https://github.com/ozgurumyilmazim/moodleInDocker.git>
 cd moodleInDocker
 
-Adım 2: Çevre Değişkenlerini Tanımlayın
+Adım 2: Kurulum Betiğini Çalıştırın
 
-Projeyle birlikte gelen şablon niteliğindeki env.local dosyasını, Docker'ın otomatik olarak tanıyacağı .env adıyla kopyalayın:
+Betiğe çalışma izni verin ve çalıştırın:
+
+chmod +x setup.sh
+./setup.sh
+
+Ekranda beliren yönergeleri takip edin. Sistem sizden Moodle başlığı, şifreleri ve portları isteyecektir.
+
+Adım 3: Logları İzleyin (İsteğe Bağlı)
+
+Konteynerlerin derlenmesi ve veritabanı tablolarının resmi Moodle CLI aracı ile şemalandırılması birkaç dakika sürebilir. Bu süreci takip etmek için:
+
+docker compose logs -f moodle
+
+İşlem bittiğinde tarayıcınızdan belirttiğiniz adrese giderek giriş yapabilirsiniz.
+
+⚙️ Manuel Kurulum (Alternatif)
+
+Eğer kurulum betiğini kullanmak istemiyorsanız, adımları elle şu şekilde gerçekleştirebilirsiniz:
+
+Çevre Değişkenlerini Tanımlayın:
 
 cp env.local .env
 
-Şimdi oluşturduğunuz .env dosyasını açıp şifrelerinizi ve sitenizin ayarlarını kendinize göre belirleyin.
-(Önemli: Güvenlik gereği MOODLE_PASSWORD şifreniz en az 8 karakter, bir büyük, bir küçük, bir rakam ve bir özel karakter içermelidir).
+.env dosyasını açarak veritabanı şifrelerini, portu ve Moodle giriş şifresini kendinize göre güncelleyin. (Moodle şifresinin en az 8 karakter, bir büyük, bir küçük, bir rakam ve bir özel karakter içermesi zorunludur).
 
-Adım 3: Sistemi Derleyin ve Başlatın
+Konteynerleri Başlatın:
 
-Moodle imajını yerel olarak derlemek ve servisleri ayağa kaldırmak için:
-
-docker-compose up --build -d
-
-Adım 4: Moodle'a Erişin
-
-Konteynerlerin derlenmesi ve veritabanı tablolarının resmi Moodle CLI aracı ile şemalandırılması birkaç dakika sürebilir. Log kayıtlarını izlemek isterseniz:
-
-docker-compose logs -f moodle
-
-İşlem bittiğinde tarayıcınızdan .env dosyasında belirttiğiniz MOODLE_URL adresine (Varsayılan: <http://localhost>) giderek giriş yapabilirsiniz.
+docker compose up --build -d
 
 📂 Dosya Yapısı
+
+setup.sh: İnteraktif, hata denetimli kurulum asistanı scripti.
 
 Dockerfile: Moodle için gerekli PostgreSQL PHP bağımlılıklarını yükleyen ve resmi kodu indiren dosya.
 
@@ -66,8 +76,8 @@ env.local: Dağıtıma hazır çevre değişkenleri şablon dosyası (Git'e yük
 
 Sistemi durdurmak için:
 
-docker-compose down
+docker compose down
 
-Tüm verileri silip sıfırdan temiz bir kurulum başlatmak için:
+Tüm verileri silip sıfırdan temiz bir kurulum başlatmak için (Dikkat: Tüm verileriniz kalıcı olarak silinir):
 
-docker-compose down -v
+docker compose down -v
