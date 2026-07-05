@@ -1,3 +1,5 @@
+#Dockerfile
+
 FROM php:8.2-apache
 
 # Gerekli sistem kütüphanelerini yükleyelim (PostgreSQL için libpq-dev eklendi)
@@ -62,7 +64,10 @@ RUN mkdir -p /var/www/moodledata \
 
 # Başlangıç betiğini kopyalayalım
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+# Windows/CRLF satır sonu uyumsuzluğunu gidermek için sed ile temizlik yapalım
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh \
+    && chmod +x /usr/local/bin/docker-entrypoint.sh
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]

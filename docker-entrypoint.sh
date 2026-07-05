@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+#docker-entrypoint.sh
+
 # Veritabanının hazır olmasını bekleyen kontrol mekanizması
 echo "PostgreSQL veritabanı bağlantısı bekleniyor..."
 until php -r "
@@ -18,23 +20,8 @@ echo "PostgreSQL bağlantısı başarılı!"
 if [ ! -f /var/www/html/config.php ]; then
     echo "İlk kurulum algılandı. Resmi Moodle CLI kurulumu başlatılıyor..."
     
-    php /var/www/html/admin/cli/install.php \
-        --lang=tr \
-        --webaddress="${MOODLE_URL}" \
-        --datadir="/var/www/moodledata" \
-        --dbtype="pgsql" \
-        --dbhost="${MOODLE_DATABASE_HOST}" \
-        --dbname="${MOODLE_DATABASE_NAME}" \
-        --dbuser="${MOODLE_DATABASE_USER}" \
-        --dbpass="${MOODLE_DATABASE_PASSWORD}" \
-        --dbport=5432 \
-        --fullname="${MOODLE_SITENAME}" \
-        --shortname="${MOODLE_SITENAME_SHORT}" \
-        --adminuser="${MOODLE_USERNAME}" \
-        --adminpass="${MOODLE_PASSWORD}" \
-        --adminemail="${MOODLE_EMAIL}" \
-        --agree-license \
-        --non-interactive
+    # Satır sonu (CRLF) birleşme hatalarını önlemek için tek satırda güvenli kurulum komutu
+    php /var/www/html/admin/cli/install.php --lang=tr --webaddress="${MOODLE_URL}" --datadir="/var/www/moodledata" --dbtype="pgsql" --dbhost="${MOODLE_DATABASE_HOST}" --dbname="${MOODLE_DATABASE_NAME}" --dbuser="${MOODLE_DATABASE_USER}" --dbpass="${MOODLE_DATABASE_PASSWORD}" --dbport=5432 --fullname="${MOODLE_SITENAME}" --shortname="${MOODLE_SITENAME_SHORT}" --adminuser="${MOODLE_USERNAME}" --adminpass="${MOODLE_PASSWORD}" --adminemail="${MOODLE_EMAIL}" --agree-license --non-interactive
 
     # Güvenlik için dosya yetkilerini sıkılaştıralım
     chown www-data:www-data /var/www/html/config.php
