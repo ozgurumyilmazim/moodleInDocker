@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#setup.sh
+
 # Renk tanımlamaları
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -46,9 +48,9 @@ fi
 echo -e "\n${YELLOW}[2/4] Kurulum parametrelerini belirleyin...${NC}"
 echo -e "Parantez içindeki değerleri varsayılan olarak kabul etmek için direkt [Enter] tuşuna basabilirsiniz.\n"
 
-# env.local dosyasından varsayılanları okuma fonksiyonu
+# env.local dosyasından varsayılanları okuma ve görünmez \r karakterlerini temizleme fonksiyonu
 get_default() {
-  grep "^$1=" env.local | cut -d'=' -f2-
+  grep "^$1=" env.local | cut -d'=' -f2- | tr -d '\r'
 }
 
 DEFAULT_POSTGRES_USER=$(get_default "POSTGRES_USER")
@@ -170,7 +172,10 @@ MOODLE_EMAIL=${moodle_email}
 PORT=${port}
 EOF
 
-echo -e "${GREEN}✔ .env dosyası başarıyla oluşturuldu.${NC}"
+# ÖNEMLİ: Windows CRLF (satır sonu) uyumsuzluğunu gidermek için .env dosyasını temizleyelim
+tr -d '\r' < .env > .env.tmp && mv .env.tmp .env
+
+echo -e "${GREEN}✔ .env dosyası başarıyla oluşturuldu ve satır sonları optimize edildi.${NC}"
 
 # 5. Docker Compose Başlatma
 echo -e "\n${YELLOW}[4/4] Docker konteynerleri derleniyor ve başlatılıyor...${NC}"
