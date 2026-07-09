@@ -17,6 +17,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - '${PORT}:80'
+    hostname: moodle
     environment:
       - MOODLE_DATABASE_HOST=db
       - MOODLE_DATABASE_USER=${POSTGRES_USER}
@@ -37,6 +38,7 @@ services:
     restart: always
     networks:
       - moodle_net
+      - proxy
 
 volumes:
   postgres_data:
@@ -49,3 +51,5 @@ volumes:
 networks:
   moodle_net:
     driver: bridge
+  proxy:
+    external: true
