@@ -26,6 +26,15 @@ if [ ! -f /var/www/html/config.php ]; then
     # Güvenlik için dosya yetkilerini sıkılaştıralım
     chown www-data:www-data /var/www/html/config.php
     chmod 640 /var/www/html/config.php
+
+    # Cloudflare Tunnel / Ters Proxy desteği
+    if [ "${MOODLE_REVERSEPROXY}" = "true" ]; then
+        echo "Ters proxy (Cloudflare Tunnel) modu etkinleştiriliyor..."
+        # config.php'nin sonundaki '?>' satırından önce ayarları ekleyelim
+        sed -i "s|require_once(__DIR__ . '/lib/setup.php');|require_once(__DIR__ . '/lib/setup.php');\n\$CFG->reverseproxy = true;\n\$CFG->sslproxy = true;|" /var/www/html/config.php
+        echo "Ters proxy ayarları config.php'ye yazıldı."
+    fi
+
     echo "Moodle kurulumu başarıyla tamamlandı!"
 else
     echo "config.php dosyası mevcut. Kurulum adımı atlanıyor."

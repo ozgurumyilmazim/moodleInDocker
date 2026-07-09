@@ -61,6 +61,7 @@ DEFAULT_MOODLE_SITENAME=$(get_default "MOODLE_SITENAME")
 DEFAULT_MOODLE_SITENAME_SHORT=$(get_default "MOODLE_SITENAME_SHORT")
 DEFAULT_MOODLE_USERNAME=$(get_default "MOODLE_USERNAME")
 DEFAULT_MOODLE_EMAIL=$(get_default "MOODLE_EMAIL")
+DEFAULT_MOODLE_REVERSEPROXY=$(get_default "MOODLE_REVERSEPROXY")
 
 # PostgreSQL Kullanıcı Adı
 read -p "PostgreSQL Kullanıcı Adı [$DEFAULT_POSTGRES_USER]: " postgres_user
@@ -82,6 +83,11 @@ port=${port:-$DEFAULT_PORT}
 # Moodle URL
 read -p "Moodle URL [$DEFAULT_MOODLE_URL]: " moodle_url
 moodle_url=${moodle_url:-$DEFAULT_MOODLE_URL}
+
+# Cloudflare Tunnel / Ters Proxy
+echo -e "\n${BLUE}NOT: Cloudflare Tunnel veya başka bir ters proxy (Nginx PM vb.) kullanıyorsanız 'true' girin.${NC}"
+read -p "Ters Proxy Modu (true/false) [$DEFAULT_MOODLE_REVERSEPROXY]: " moodle_reverseproxy
+moodle_reverseproxy=${moodle_reverseproxy:-$DEFAULT_MOODLE_REVERSEPROXY}
 
 # Moodle Site Adı
 read -p "Moodle Site Adı [$DEFAULT_MOODLE_SITENAME]: " moodle_sitename
@@ -162,6 +168,9 @@ POSTGRES_DB=${postgres_db}
 MOODLE_URL=${moodle_url}
 MOODLE_SITENAME=${moodle_sitename}
 MOODLE_SITENAME_SHORT=${moodle_sitename_short}
+
+# Ters Proxy / Cloudflare Tunnel
+MOODLE_REVERSEPROXY=${moodle_reverseproxy}
 
 # Moodle Yönetici Giriş Bilgileri
 MOODLE_USERNAME=${moodle_username}

@@ -28,6 +28,7 @@ services:
       - MOODLE_EMAIL=${MOODLE_EMAIL}
       - MOODLE_SITENAME=${MOODLE_SITENAME}
       - MOODLE_SITENAME_SHORT=${MOODLE_SITENAME_SHORT}
+      - MOODLE_REVERSEPROXY=${MOODLE_REVERSEPROXY:-false}
     volumes:
       - moodle_data:/var/www/html
       - moodledata_data:/var/www/moodledata
