@@ -31,7 +31,7 @@ if [ ! -f /var/www/html/config.php ]; then
     if [ "${MOODLE_REVERSEPROXY}" = "true" ]; then
         echo "Ters proxy (Cloudflare Tunnel) modu etkinleştiriliyor..."
         # config.php'ye sslproxy ve reverseproxy ayarlarını ekle
-        sed -i "s|require_once(__DIR__ . '/lib/setup.php');|require_once(__DIR__ . '/lib/setup.php');\n\$CFG->sslproxy = true;\n\$CFG->reverseproxy = true;\n\$_SERVER['HTTPS']  = 'on';|" /var/www/html/config.php
+        sed -i "s|require_once(__DIR__ . '/lib/setup.php');|\n\$CFG->sslproxy = true;\n\$CFG->reverseproxy = true;\n\$_SERVER['HTTPS']  = 'on';\n\nrequire_once(__DIR__ . '/lib/setup.php');\n|" /var/www/html/config.php
         
         # Apache'ye X-Forwarded-Proto başlığını okutarak PHP'ye HTTPS olduğunu bildirmesini sağlayalım
         # Bu, Moodle'ın HTTP'ye yönlendirme döngüsüne girmesini engeller
