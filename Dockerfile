@@ -34,8 +34,8 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     sodium \
     curl
 
-# Apache mod_rewrite modülünü aktif edelim
-RUN a2enmod rewrite
+# Apache mod_rewrite modülünü aktif edelim ve ServerName uyarısını giderelim
+RUN a2enmod rewrite && echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Moodle için önerilen PHP konfigürasyonlarını ayarlayalım
 RUN { \
