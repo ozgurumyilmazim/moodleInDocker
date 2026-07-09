@@ -37,6 +37,11 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 # Apache mod_rewrite modülünü aktif edelim ve ServerName uyarısını giderelim
 RUN a2enmod rewrite && echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
+# Apache DocumentRoot ayarını Moodle 5.x standartlarına göre /var/www/html/public yapalım
+ENV APACHE_DOCUMENT_ROOT /var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
+RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+
 # Moodle için önerilen PHP konfigürasyonlarını ayarlayalım
 RUN { \
     echo 'opcache.enable=1'; \
