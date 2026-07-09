@@ -81,11 +81,16 @@ read -p "Moodle Hangi Porttan Yayınlansın? [$DEFAULT_PORT]: " port
 port=${port:-$DEFAULT_PORT}
 
 # Moodle URL
+echo -e "\n${BLUE}NOT: Kullanıcıların tarayıcıda göreceği PUBLIC adresi girin.${NC}"
+echo -e "${BLUE}      Cloudflare Tunnel kullanıyorsanız → https://lms.example.com${NC}"
+echo -e "${BLUE}      Yerel/test ortamı için           → http://localhost${NC}"
+echo -e "${BLUE}      (Docker arka planda HTTP çalışır, Cloudflare HTTPS'i üstlenir — bu normaldir)${NC}"
 read -p "Moodle URL [$DEFAULT_MOODLE_URL]: " moodle_url
 moodle_url=${moodle_url:-$DEFAULT_MOODLE_URL}
 
 # Cloudflare Tunnel / Ters Proxy
 echo -e "\n${BLUE}NOT: Cloudflare Tunnel veya başka bir ters proxy (Nginx PM vb.) kullanıyorsanız 'true' girin.${NC}"
+echo -e "${BLUE}      (Yukarıda https:// ile URL girdiyseniz bu ayar da 'true' olmalıdır)${NC}"
 read -p "Ters Proxy Modu (true/false) [$DEFAULT_MOODLE_REVERSEPROXY]: " moodle_reverseproxy
 moodle_reverseproxy=${moodle_reverseproxy:-$DEFAULT_MOODLE_REVERSEPROXY}
 
