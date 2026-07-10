@@ -31,6 +31,7 @@ services:
       - MOODLE_SITENAME_SHORT=${MOODLE_SITENAME_SHORT}
       - MOODLE_REVERSEPROXY=${MOODLE_REVERSEPROXY:-false}
     volumes:
+      - apache2_data:/etc/apache2
       - moodle_data:/var/www/html
       - moodledata_data:/var/www/moodledata
     depends_on:
@@ -43,6 +44,8 @@ services:
 volumes:
   postgres_data:
     driver: local
+  apache2_data:
+    driver: local"
   moodle_data:
     driver: local
   moodledata_data:
