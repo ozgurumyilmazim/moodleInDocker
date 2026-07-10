@@ -57,11 +57,19 @@ RUN { \
     echo 'max_input_vars=5000'; \
     } > /usr/local/etc/php/conf.d/moodle-recommended.ini
 
+# Resmi Composer'ı multi-stage build kullanarak imajımıza dahil edelim
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 # Resmi Moodle paketini indirip çıkaralım (Moodle 5.2.1 sürümü için stable502 dalı kullanılıyor)
 ARG MOODLE_VERSION=5.2.1
 RUN curl -fSL "https://download.moodle.org/download.php/direct/stable502/moodle-${MOODLE_VERSION}.tgz" -o moodle.tgz \
     && tar -xzf moodle.tgz --strip-components=1 -C /var/www/html \
     && rm moodle.tgz
+
+# Çalışma dizinini ayarlayıp Composer bağımlılıklarını ve sınıf haritalarını oluşturalım
+WORKDIR /var/www/html
+RUN composer install --no-dev --classmap-authoritative --no-interaction
 
 # Verilerin saklanacağı moodledata klasörünü web erişimi dışına oluşturalım
 RUN mkdir -p /var/www/moodledata \
