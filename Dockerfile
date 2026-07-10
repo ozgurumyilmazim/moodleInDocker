@@ -34,8 +34,19 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     sodium \
     curl
 
-# Apache mod_rewrite modülünü aktif edelim ve ServerName uyarısını giderelim
-RUN a2enmod rewrite && echo "ServerName localhost" >> /etc/apache2/apache2.conf
+# =========================================================================
+# [SON GÜNCELLEME 1]: APACHE YÖNLENDİRME (ROUTING) VE .HTACCESS AYARLARI
+# Moodle 5.x ile gelen yeni API/Yönlendirme yapısının çalışması için:
+# 
+# 1. 'a2enmod rewrite': URL yönlendirmelerinin (RewriteEngine) aktif edilmesini sağlar.
+# 2. 'sed... AllowOverride All': Apache'de varsayılan olarak kapalı olan .htaccess 
+#    dosyalarının okunmasına izin verir. Bu, "Router not configured" uyarısını çözer.
+# 3. 'AcceptPathInfo On': Moodle'ın modern PathInfo URL'lerini doğru işlemesini sağlar.
+# =========================================================================
+RUN a2enmod rewrite \
+    && sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf \
+    && echo "ServerName localhost" >> /etc/apache2/apache2.conf \
+    && echo "AcceptPathInfo On" >> /etc/apache2/apache2.conf
 
 # Apache DocumentRoot ayarını Moodle 5.x standartlarına göre /var/www/html/public yapalım
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
@@ -57,7 +68,14 @@ RUN { \
     echo 'max_input_vars=5000'; \
     } > /usr/local/etc/php/conf.d/moodle-recommended.ini
 
-# Resmi Composer'ı multi-stage build kullanarak imajımıza dahil edelim
+# =========================================================================
+# [SON GÜNCELLEME 2]: COMPOSER ENTEGRASYONU VE OTOMATİK SİNIF YÜKLEYİCİ
+# Moodle 5.x bağımlılıklarını yönetmek ve sunucu kontrollerindeki 
+# "Composer installed data not found" uyarısını kalıcı olarak çözmek için:
+# 
+# 1. 'COPY --from=composer...': Resmi Composer imajından çalıştırılabilir dosyayı kopyalarız.
+# 2. 'COMPOSER_ALLOW_SUPERUSER=1': Root kullanıcısıyla çalıştırılmasına izin veririz.
+# =========================================================================
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 ENV COMPOSER_ALLOW_SUPERUSER=1
 
@@ -67,7 +85,11 @@ RUN curl -fSL "https://download.moodle.org/download.php/direct/stable502/moodle-
     && tar -xzf moodle.tgz --strip-components=1 -C /var/www/html \
     && rm moodle.tgz
 
-# Çalışma dizinini ayarlayıp Composer bağımlılıklarını ve sınıf haritalarını oluşturalım
+# =========================================================================
+# [SON GÜNCELLEME 2'NİN DEVAMI]: BAĞIMLILIKLARIN KURULUMU VE SINIF HARİTALARI
+# Çalışma dizinini Moodle kök dizini yapıp sınıf haritalarını (classmaps) 
+# optimize edilmiş şekilde yeniden oluştururuz.
+# =========================================================================
 WORKDIR /var/www/html
 RUN composer install --no-dev --classmap-authoritative --no-interaction
 
