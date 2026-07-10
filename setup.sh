@@ -44,13 +44,15 @@ if [ -f ".env" ]; then
   fi
 fi
 
-# 3. Kullanıcıdan Bilgileri Alma (Varsayılan değerleri env.local'den oku)
+cp env.local .env
+
+# 3. Kullanıcıdan Bilgileri Alma (Varsayılan değerleri .env dosyasından oku)
 echo -e "\n${YELLOW}[2/4] Kurulum parametrelerini belirleyin...${NC}"
 echo -e "Parantez içindeki değerleri varsayılan olarak kabul etmek için direkt [Enter] tuşuna basabilirsiniz.\n"
 
-# env.local dosyasından varsayılanları okuma ve görünmez \r karakterlerini temizleme fonksiyonu
+# .env dosyasından varsayılanları okuma ve görünmez \r karakterlerini temizleme fonksiyonu
 get_default() {
-  grep "^$1=" env.local | cut -d'=' -f2- | tr -d '\r'
+  grep "^$1=" .env | cut -d'=' -f2- | tr -d '\r'
 }
 
 DEFAULT_POSTGRES_USER=$(get_default "POSTGRES_USER")
@@ -109,7 +111,7 @@ moodle_username=${moodle_username:-$DEFAULT_MOODLE_USERNAME}
 # Moodle Yönetici Şifresi için Moodle uyumlu rastgele şifre üretelim
 SPEC_CHARS='!@#%*+=-?'
 SPECIALS=""
-for i in {1..3}; do
+for i in {1..3}; do.
   SPECIALS="${SPECIALS}${SPEC_CHARS:$((RANDOM % ${#SPEC_CHARS})):1}"
 done
 UPPERS=$(openssl rand -base64 15 | tr -dc 'A-Z' | head -c 3)
@@ -159,32 +161,6 @@ done
 # Moodle Yönetici E-Posta
 read -p "Moodle Yönetici E-Posta [$DEFAULT_MOODLE_EMAIL]: " moodle_email
 moodle_email=${moodle_email:-$DEFAULT_MOODLE_EMAIL}
-
-# 4. .env Dosyasını Oluşturma
-echo -e "\n${YELLOW}[3/4] .env dosyası oluşturuluyor...${NC}"
-
-cat <<EOF > .env
-# PostgreSQL (Veritabanı) Ayarları
-POSTGRES_USER=${postgres_user}
-POSTGRES_PASSWORD=${postgres_password}
-POSTGRES_DB=${postgres_db}
-
-# Moodle Genel Ayarları
-MOODLE_URL=${moodle_url}
-MOODLE_SITENAME=${moodle_sitename}
-MOODLE_SITENAME_SHORT=${moodle_sitename_short}
-
-# Ters Proxy / Cloudflare Tunnel
-MOODLE_REVERSEPROXY=${moodle_reverseproxy}
-
-# Moodle Yönetici Giriş Bilgileri
-MOODLE_USERNAME=${moodle_username}
-MOODLE_PASSWORD=${moodle_password}
-MOODLE_EMAIL=${moodle_email}
-
-# Ağ / Port Ayarları
-PORT=${port}
-EOF
 
 # ÖNEMLİ: Windows CRLF (satır sonu) uyumsuzluğunu gidermek için .env dosyasını temizleyelim
 tr -d '\r' < .env > .env.tmp && mv .env.tmp .env
