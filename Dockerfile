@@ -1,6 +1,6 @@
 #Dockerfile
 
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 # Gerekli sistem kütüphanelerini yükleyelim (PostgreSQL için libpq-dev eklendi)
 RUN apt-get update && apt-get install -y \
@@ -57,9 +57,9 @@ RUN { \
     echo 'max_input_vars=5000'; \
     } > /usr/local/etc/php/conf.d/moodle-recommended.ini
 
-# Resmi Moodle paketini indirip çıkaralım (Moodle 5.1.5 sürümü için stable501 dalı kullanılıyor)
-ARG MOODLE_VERSION=5.1.5
-RUN curl -fSL "https://download.moodle.org/download.php/direct/stable501/moodle-${MOODLE_VERSION}.tgz" -o moodle.tgz \
+# Resmi Moodle paketini indirip çıkaralım (Moodle 5.2.1 sürümü için stable502 dalı kullanılıyor)
+ARG MOODLE_VERSION=5.2.1
+RUN curl -fSL "https://download.moodle.org/download.php/direct/stable502/moodle-${MOODLE_VERSION}.tgz" -o moodle.tgz \
     && tar -xzf moodle.tgz --strip-components=1 -C /var/www/html \
     && rm moodle.tgz
 
