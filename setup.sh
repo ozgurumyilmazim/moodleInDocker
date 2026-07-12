@@ -58,6 +58,17 @@ get_default() {
   grep "^$1=" .env | cut -d'=' -f2- | tr -d '\r'
 }
 
+# .env dosyasındaki değişkenleri güncelleme veya ekleme fonksiyonu
+update_env_var() {
+  local key=$1
+  local value=$2
+  if grep -q "^$key=" .env; then
+    sed "s|^$key=.*|$key=$value|" .env > .env.tmp && mv .env.tmp .env
+  else
+    echo "$key=$value" >> .env
+  fi
+}
+
 DEFAULT_POSTGRES_USER=$(get_default "POSTGRES_USER")
 DEFAULT_POSTGRES_DB=$(get_default "POSTGRES_DB")
 DEFAULT_PORT=$(get_default "PORT")
@@ -73,7 +84,12 @@ read -p "PostgreSQL Kullanıcı Adı [$DEFAULT_POSTGRES_USER]: " postgres_user
 postgres_user=${postgres_user:-$DEFAULT_POSTGRES_USER}
 
 # PostgreSQL Şifresi (Güvenli olması için rastgele üretelim veya kullanıcı girsin)
-RANDOM_DB_PASS=$(openssl rand -hex 12)
+DEFAULT_POSTGRES_PASSWORD=$(get_default "POSTGRES_PASSWORD")
+if [ "$DEFAULT_POSTGRES_PASSWORD" = "moodle_veritabani_sifresi" ] || [ -z "$DEFAULT_POSTGRES_PASSWORD" ]; then
+  RANDOM_DB_PASS=$(openssl rand -hex 12)
+else
+  RANDOM_DB_PASS=$DEFAULT_POSTGRES_PASSWORD
+fi
 read -p "PostgreSQL Şifresi [$RANDOM_DB_PASS]: " postgres_password
 postgres_password=${postgres_password:-$RANDOM_DB_PASS}
 
@@ -112,20 +128,33 @@ read -p "Moodle Yönetici Kullanıcı Adı [$DEFAULT_MOODLE_USERNAME]: " moodle_
 moodle_username=${moodle_username:-$DEFAULT_MOODLE_USERNAME}
 
 # Moodle Yönetici Şifresi için Moodle uyumlu rastgele şifre üretelim
-SPEC_CHARS='!@#%*+=-?'
-SPECIALS=""
-for i in {1..3}; do
-  SPECIALS="${SPECIALS}${SPEC_CHARS:$((RANDOM % ${#SPEC_CHARS})):1}"
-done
-UPPERS=$(openssl rand -base64 15 | tr -dc 'A-Z' | head -c 3)
-LOWERS=$(openssl rand -base64 15 | tr -dc 'a-z' | head -c 3)
-DIGITS=$(openssl rand -base64 15 | tr -dc '0-9' | head -c 3)
-RAW_PASS="${UPPERS}${LOWERS}${DIGITS}${SPECIALS}"
+DEFAULT_MOODLE_PASSWORD=$(get_default "MOODLE_PASSWORD")
+is_valid_moodle_password() {
+  local pass=$1
+  if [ ${#pass} -lt 8 ] || ! [[ "$pass" =~ [A-Z] ]] || ! [[ "$pass" =~ [a-z] ]] || ! [[ "$pass" =~ [0-9] ]] || ! [[ "$pass" =~ [^a-zA-Z0-9] ]]; then
+    return 1
+  fi
+  return 0
+}
 
-if command -v shuf >/dev/null 2>&1; then
-  RANDOM_ADMIN_PASS=$(echo "$RAW_PASS" | fold -w1 | shuf | tr -d '\n')
+if is_valid_moodle_password "$DEFAULT_MOODLE_PASSWORD" && [ "$DEFAULT_MOODLE_PASSWORD" != "MoodleYoneticiSifresi123!" ]; then
+  RANDOM_ADMIN_PASS=$DEFAULT_MOODLE_PASSWORD
 else
-  RANDOM_ADMIN_PASS="${UPPERS:0:1}${LOWERS:0:1}${DIGITS:0:1}${SPECIALS:0:1}${UPPERS:1:2}${LOWERS:1:2}${DIGITS:1:2}${SPECIALS:1:2}"
+  SPEC_CHARS='!@#%*+=-?'
+  SPECIALS=""
+  for i in {1..3}; do
+    SPECIALS="${SPECIALS}${SPEC_CHARS:$((RANDOM % ${#SPEC_CHARS})):1}"
+  done
+  UPPERS=$(openssl rand -base64 15 | tr -dc 'A-Z' | head -c 3)
+  LOWERS=$(openssl rand -base64 15 | tr -dc 'a-z' | head -c 3)
+  DIGITS=$(openssl rand -base64 15 | tr -dc '0-9' | head -c 3)
+  RAW_PASS="${UPPERS}${LOWERS}${DIGITS}${SPECIALS}"
+
+  if command -v shuf >/dev/null 2>&1; then
+    RANDOM_ADMIN_PASS=$(echo "$RAW_PASS" | fold -w1 | shuf | tr -d '\n')
+  else
+    RANDOM_ADMIN_PASS="${UPPERS:0:1}${LOWERS:0:1}${DIGITS:0:1}${SPECIALS:0:1}${UPPERS:1:2}${LOWERS:1:2}${DIGITS:1:2}${SPECIALS:1:2}"
+  fi
 fi
 
 # Moodle Yönetici Şifresi (Validasyonlu)
@@ -165,10 +194,23 @@ done
 read -p "Moodle Yönetici E-Posta [$DEFAULT_MOODLE_EMAIL]: " moodle_email
 moodle_email=${moodle_email:-$DEFAULT_MOODLE_EMAIL}
 
+# Güncellenen parametreleri .env dosyasına yazalım
+update_env_var "POSTGRES_USER" "$postgres_user"
+update_env_var "POSTGRES_PASSWORD" "$postgres_password"
+update_env_var "POSTGRES_DB" "$postgres_db"
+update_env_var "PORT" "$port"
+update_env_var "MOODLE_URL" "$moodle_url"
+update_env_var "MOODLE_REVERSEPROXY" "$moodle_reverseproxy"
+update_env_var "MOODLE_SITENAME" "$moodle_sitename"
+update_env_var "MOODLE_SITENAME_SHORT" "$moodle_sitename_short"
+update_env_var "MOODLE_USERNAME" "$moodle_username"
+update_env_var "MOODLE_PASSWORD" "$moodle_password"
+update_env_var "MOODLE_EMAIL" "$moodle_email"
+
 # ÖNEMLİ: Windows CRLF (satır sonu) uyumsuzluğunu gidermek için .env dosyasını temizleyelim
 tr -d '\r' < .env > .env.tmp && mv .env.tmp .env
 
-echo -e "${GREEN}✔ .env dosyası başarıyla oluşturuldu ve satır sonları optimize edildi.${NC}"
+echo -e "${GREEN}✔ .env dosyası başarıyla güncellendi ve satır sonları optimize edildi.${NC}"
 
 # 5. Docker Compose Başlatma
 echo -e "\n${YELLOW}[4/4] Docker konteynerleri derleniyor ve başlatılıyor...${NC}"
