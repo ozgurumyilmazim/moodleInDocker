@@ -45,7 +45,7 @@ volumes:
   postgres_data:
     driver: local
   apache2_data:
-    driver: local"
+    driver: local
   moodle_data:
     driver: local
   moodledata_data:
