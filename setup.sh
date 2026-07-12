@@ -111,7 +111,7 @@ moodle_username=${moodle_username:-$DEFAULT_MOODLE_USERNAME}
 # Moodle Yönetici Şifresi için Moodle uyumlu rastgele şifre üretelim
 SPEC_CHARS='!@#%*+=-?'
 SPECIALS=""
-for i in {1..3}; do.
+for i in {1..3}; do
   SPECIALS="${SPECIALS}${SPEC_CHARS:$((RANDOM % ${#SPEC_CHARS})):1}"
 done
 UPPERS=$(openssl rand -base64 15 | tr -dc 'A-Z' | head -c 3)
