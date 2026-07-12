@@ -35,16 +35,19 @@ fi
 echo -e "${GREEN}✔ env.local şablonu bulundu.${NC}"
 
 # 2. .env Dosyası Kontrolü
-if [ -f ".env" ]; then
+if [ ! -f ".env" ]; then
+  cp env.local .env
+  echo -e "${GREEN}✔ env.local dosyası .env olarak kopyalandı.${NC}"
+else
   echo -e "\n${YELLOW}Mevcut bir '.env' dosyası tespit edildi!${NC}"
-  read -p "Üzerine yazmak istiyor musunuz? (e/h): " overwrite
-  if [[ ! "$overwrite" =~ ^[Ee]$ ]]; then
-    echo -e "${RED}Kurulum iptal edildi.${NC}"
-    exit 0
+  read -p "env.local dosyasının üzerine yazılmasını istiyor musunuz? (e/h): " overwrite
+  if [[ "$overwrite" =~ ^[Ee]$ ]]; then
+    cp env.local .env
+    echo -e "${GREEN}✔ env.local şablonu .env üzerine yazıldı.${NC}"
+  else
+    echo -e "${YELLOW}Mevcut .env dosyası korunarak devam ediliyor...${NC}"
   fi
 fi
-
-cp env.local .env
 
 # 3. Kullanıcıdan Bilgileri Alma (Varsayılan değerleri .env dosyasından oku)
 echo -e "\n${YELLOW}[2/4] Kurulum parametrelerini belirleyin...${NC}"
